@@ -1,0 +1,212 @@
+<?php
+  /* =====================================================================================
+	Travail 	: tp5
+	Date 		: 
+	Auteur 		: reda benhsain
+	Description : menu de site web
+	========================================================================================== */
+
+
+	//==============================================================================================
+	function htmlPageComplete()
+	{		
+		// Consultez le code source de la page DemoTp5E1.php afin d'avoir
+		// une idée du code HTML à affecter dans la variable $html.
+		$html = '<table cellspacing="0">
+					<tbody>
+						<tr>
+							<td class="grandTitre" colspan="2">BalaPro, le spécialiste du baladeur</td>
+						</tr>
+						<tr>
+							<td id="tdOptions" class="options">'. htmlGauche() .'</td>	
+							<td id="tdContenu" class="contenu">'.  htmlContenue() .'</td> 
+						</tr>	
+					</tbody>
+				</table>';
+				
+		return $html;
+	}
+
+function htmlGauche()
+	{
+	$htmlGauche ='<div class="etiquette">VOIR PAR MARQUE</div> ';
+	
+	$resultats = mysql_query("SELECT COUNT(*) As Quantite,B_Marque FROM t_baladeurs GROUP BY B_Marque");
+	
+
+
+		// les MARQUES------------------	
+		while ($tabEnrCourant = mysql_fetch_assoc($resultats)) 
+			{
+				 			
+				$lien = $_SERVER['PHP_SELF'] . "?marque=" . urlencode($tabEnrCourant['B_Marque']);	
+				//si une marque a ete clicker, change la classe
+				if(isset($_GET['marque']) && $tabEnrCourant['B_Marque'] == $_GET['marque'] )
+				$htmlGauche .= '<div class="lienSel"><a href="' . $lien . '">'.$tabEnrCourant['B_Marque'].' ('.$tabEnrCourant['Quantite'].')</a></div>';
+				else
+				$htmlGauche .= '<div class="lien"><a href="' . $lien . '">'.$tabEnrCourant['B_Marque'].' ('.$tabEnrCourant['Quantite'].')</a></div>';
+				
+			}
+			
+			$htmlGauche .= '<div class="lien"><a href="' . $_SERVER['PHP_SELF'] . '">peu importe</a></div>
+			<div class="etiquette">VOIR PAR TAILLE </div>';
+			
+		// partie BAS du tableau MEMOIRE------------------	
+		
+			$resultats2 = mysql_query("SELECT COUNT(*) As QuantiteM,B_Memoire FROM t_baladeurs GROUP BY B_Memoire");
+			while ($tabEnrCourant2 = mysql_fetch_assoc($resultats2)) 
+			{
+				$lienMemoire = $_SERVER['PHP_SELF'] . "?taille=" . urlencode($tabEnrCourant2['B_Memoire']);
+				//si une marque a ete clicker, change la classe	 
+				if(isset($_GET['taille']) && $tabEnrCourant2['B_Memoire'] == $_GET['taille'] )
+				$htmlGauche .=	'<div class="lienSel"><a href="' . $lienMemoire . '">'.$tabEnrCourant2['B_Memoire'].' Go ('.$tabEnrCourant2['QuantiteM'].')</a></div>';
+				else
+				$htmlGauche .=	'<div class="lien"><a href="' . $lienMemoire . '">'.$tabEnrCourant2['B_Memoire'].' Go ('.$tabEnrCourant2['QuantiteM'].')</a></div>';
+			}
+			$htmlGauche .= '<div class="lien"><a href="' . $_SERVER['PHP_SELF'] . '">peu importe</a></div>';
+			
+
+		
+		return $htmlGauche;
+	}
+	
+	
+	
+	function htmlContenue()
+	{
+		
+		// un isset qui determine si jai recu un id, taille ou marque, chercher juste les produits  en question
+		$html2="";
+		if (isset($_GET['id'])){
+			
+			
+		        $resultats = mysql_query("SELECT * FROM t_baladeurs WHERE B_ID='".$_GET['id']."'");	
+				$nbEnregistrements = mysql_num_rows($resultats);
+					 
+				$html2 = '<div class="infReq"> Détails de votre sélection</div>';
+				
+				$noEnr = 1;
+				while ($tabEnrCourant = mysql_fetch_assoc($resultats)) 
+				{ 
+				$html2 .= '<table class="details" cellspacing="8" cellpadding="8">
+							<tbody>
+							<tr><td width="151" rowspan="3"><img width="150" height="150" src="../ImagesTp5/'.$tabEnrCourant['B_Marque'].'_'.$tabEnrCourant['B_Modele'].'G.gif"></td>
+							<td class="titre" width="486">Baladeur '.$tabEnrCourant['B_Marque'].' de '.$tabEnrCourant['B_Memoire'].' Go modèle '.$tabEnrCourant['B_Modele'].'</td></tr>
+							<tr><td>'.htmlentities($tabEnrCourant['B_Description']).'</td></tr>				
+							<tr><td><div class="titre" align="right">$ '.$tabEnrCourant['B_Prix'].'</div></td></tr>
+							</tbody></table>';
+							$noEnr++;
+							
+				}
+		
+		return $html2;
+		break;
+	}
+		
+		
+		
+		
+		
+		if (isset($_GET['marque']))
+			{
+				
+				
+				
+				$resultats = mysql_query("SELECT * FROM t_baladeurs WHERE B_Marque='".$_GET['marque']."'  ORDER BY B_Prix ASC");	
+				$nbEnregistrements = mysql_num_rows($resultats);
+				 
+				$html2 = '<div class="infReq">'.$nbEnregistrements .' modèles de baladeurs</div>';
+				
+				$noEnr = 1;
+				while ($tabEnrCourant = mysql_fetch_assoc($resultats)) 
+				{
+						$lienId = $_SERVER['PHP_SELF'].'?id='.urlencode($tabEnrCourant['B_ID']);
+						$lienId = $_SERVER['PHP_SELF'].'?id='.urlencode($tabEnrCourant['B_ID']);	 
+				$html2 .= '<div class="liste" width="700">
+							'.$noEnr.'.<img width="55" height="55" border="0" align="middle" src="../ImagesTp5/'.$tabEnrCourant['B_Marque'].'_'.$tabEnrCourant['B_Modele'].'P.gif">
+							: Baladeur '.$tabEnrCourant['B_Marque'].' de '.$tabEnrCourant['B_Memoire'].'Go, modèle '.$tabEnrCourant['B_Modele'].', Prix '.$tabEnrCourant['B_Prix'].'
+							<a class="details" href="'.$lienId.'">Détails...</a></div>';
+							$noEnr++;
+				}
+				
+				
+			}
+		else if (isset($_GET['taille']))
+			{
+	
+				
+				
+				$resultats = mysql_query("SELECT * FROM t_baladeurs WHERE B_Memoire='".$_GET['taille']."'  ORDER BY B_Prix ASC");	
+				$nbEnregistrements = mysql_num_rows($resultats);
+			 
+				$html2 = '<div class="infReq">'.$nbEnregistrements .' modèles de baladeurs</div>';
+				
+				$noEnr = 1;
+				while ($tabEnrCourant = mysql_fetch_assoc($resultats)) 
+				{
+						$lienId = $_SERVER['PHP_SELF'].'?id='.urlencode($tabEnrCourant['B_ID']);	 
+				$html2 .= '<div class="liste" width="700">
+							'.$noEnr.'.<img width="55" height="55" border="0" align="middle" src="../ImagesTp5/'.$tabEnrCourant['B_Marque'].'_'.$tabEnrCourant['B_Modele'].'P.gif">
+							: Baladeur '.$tabEnrCourant['B_Marque'].' de '.$tabEnrCourant['B_Memoire'].'Go, modèle '.$tabEnrCourant['B_Modele'].', Prix '.$tabEnrCourant['B_Prix'].'
+							<a class="details" href="'.$lienId.'">Détails...</a></div>';
+							$noEnr++;
+				}
+				
+				
+			}
+			else // Quand la page est appelée la première fois, $_GET est vide et on affiche 3 liens sur la page
+			{
+		
+				$resultats = mysql_query("SELECT * FROM t_baladeurs ORDER BY B_Prix ASC");	
+				$nbEnregistrements = mysql_num_rows($resultats);
+					 
+				$html2 = '<div class="infReq">'.$nbEnregistrements .' modèles de baladeurs</div>';
+				
+				$noEnr = 1;
+				while ($tabEnrCourant = mysql_fetch_assoc($resultats)) 
+				{
+					$lienId = $_SERVER['PHP_SELF'].'?id='.urlencode($tabEnrCourant['B_ID']); 
+				$html2 .= '<div class="liste" width="700">
+							'.$noEnr.'.<img width="55" height="55" border="0" align="middle" src="../ImagesTp5/'.$tabEnrCourant['B_Marque'].'_'.$tabEnrCourant['B_Modele'].'P.gif">
+							: Baladeur '.$tabEnrCourant['B_Marque'].' de '.$tabEnrCourant['B_Memoire'].'Go, modèle '.$tabEnrCourant['B_Modele'].', Prix '.$tabEnrCourant['B_Prix'].'
+							<a class="details" href="'.$lienId.'">Détails...</a></div>';
+							$noEnr++;
+				}
+			}
+		return $html2;
+		
+	}
+	
+
+
+		
+	
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Tp5 Étape 1</title>
+	<link rel="stylesheet" type="text/css" href="stylesTp5.css" />
+</head>
+<body>
+	<?php 			
+
+			$connection = @mysql_connect("localhost","root", "") or die("Impossible de se connecter : " . utf8_encode(mysql_error()));
+			
+	
+			$selectionBD = mysql_select_db("bd_954_tp5");
+			if (!mysql_select_db("bd_954_tp5"))
+			   die('Impossible de sélectionner la BD : ' . utf8_encode(mysql_error()));
+			
+			
+			
+			
+			echo htmlPageComplete();
+			
+			mysql_close($connection);	
+	?>
+</body>
+</html>
+
+
